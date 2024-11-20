@@ -25,10 +25,36 @@ const getContactById = async (req, res) => {
 
 const createContacts = async (req, res) => {
   try {
-    const contacts = req.body;
-    console.log(contacts, "...............");
-    const result = await contactModel.createContacts(contacts);
-    res.status(201).json({ message: "Contacts created", result });
+    const { user_id, list_name, list_description, contacts } = req.body;
+
+    // Validate input
+    if (
+      !user_id ||
+      !list_name ||
+      !list_description ||
+      !Array.isArray(contacts)
+    ) {
+      return res.status(400).json({ error: "Invalid input data" });
+    }
+
+    // Ensure each contact has email and contact_number
+    for (const contact of contacts) {
+      if (!contact.email || !contact.contact_number) {
+        return res.status(400).json({
+          error: "Each contact must have an email and contact_number",
+        });
+      }
+    }
+
+    const result = await contactModel.createContacts(
+      user_id,
+      list_name,
+      list_description,
+      contacts
+    );
+    res
+      .status(201)
+      .json({ message: "Contacts List created Sucessfully", data: result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

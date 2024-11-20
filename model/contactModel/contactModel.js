@@ -15,19 +15,26 @@ const getContactById = async (contact_id) => {
   return rows[0];
 };
 
-const createContacts = async (contacts) => {
-  // 'contacts' is an array of contact objects
+const createContacts = async (
+  user_id,
+  list_name,
+  list_description,
+  contacts
+) => {
   const sql = `
-    INSERT INTO contacts ( user_id, email, contact_number, list_name, list_description)
+    INSERT INTO contacts (user_id, email, contact_number, list_name, list_description)
     VALUES ?
   `;
+
+  // Build the values array
   const values = contacts.map((contact) => [
-    contact.user_id,
+    user_id,
     contact.email,
     contact.contact_number,
-    contact.list_name,
-    contact.list_description,
+    list_name,
+    list_description,
   ]);
+
   const [result] = await pool.query(sql, [values]);
   return result;
 };
