@@ -2,12 +2,12 @@
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
-const userRoutes = require("./routes/userRoute/userRoute");
-const roleRoutes = require("./routes/roleRoute/roleRoutes");
 const pool = require("./config/DBConnection");
 const helmet = require("helmet");
 const cors = require("cors");
-
+const userRoutes = require("./routes/userRoute/userRoute");
+const roleRoutes = require("./routes/roleRoute/roleRoutes");
+const contactRoutes = require("./routes/contactRoute/contactRoute");
 dotenv.config({ path: "./config/config.env" });
 
 app.use(express.json());
@@ -16,6 +16,7 @@ app.use(cors());
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api", contactRoutes);
 
 app.get("/", (req, res) => {
   res.send("User Management API is running.");
