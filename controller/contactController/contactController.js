@@ -2,20 +2,25 @@ const contactModel = require("../../model/contactModel/contactModel");
 
 const getAllContacts = async (req, res) => {
   try {
-    // Extract pagination parameters from query string
-    const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 contacts per page
+    const pageParam = parseInt(req.params.page);
+    const limitParam = parseInt(req.query.limit);
+
+    const page = !isNaN(pageParam) && pageParam > 0 ? pageParam : 1;
+    const limit = !isNaN(limitParam) && limitParam > 0 ? limitParam : 10;
 
     const { contacts, totalContacts } = await contactModel.getAllContacts(
       page,
       limit
     );
 
+    const totalPages = Math.ceil(totalContacts / limit);
+    const currentPage = page > totalPages && totalPages > 0 ? totalPages : page;
+
     res.status(200).json({
       contacts,
       totalContacts,
-      currentPage: page,
-      totalPages: Math.ceil(totalContacts / limit),
+      currentPage,
+      totalPages,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -130,6 +135,30 @@ const deleteContact = async (req, res) => {
   }
 };
 
+const getContactsByList = async (req, res) => {
+  try {
+    const { list_name } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+
+    if (!list_name) {
+      return res.status(400).json({ error: "list_name is required" });
+    }
+
+    const data = await contactModel.getContactsByList(list_name, page, limit);
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: "No contacts found for the given list_name" });
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getAllContacts,
   getListNamesWithContactCount,
@@ -137,4 +166,5 @@ module.exports = {
   createContacts,
   updateContact,
   deleteContact,
+  getContactsByList,
 };

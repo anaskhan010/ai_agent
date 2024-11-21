@@ -3,13 +3,11 @@ const pool = require("../../config/DBConnection"); // Adjust the path to your po
 const getAllContacts = async (page, limit) => {
   const offset = (page - 1) * limit;
 
-  // Query to get the total number of contacts
   const [totalRows] = await pool.query(
     "SELECT COUNT(*) as total FROM contacts"
   );
   const totalContacts = totalRows[0]?.total || 0;
 
-  // Query to get paginated contacts
   const sql = "SELECT * FROM contacts LIMIT ? OFFSET ?";
   const [rows] = await pool.query(sql, [parseInt(limit), parseInt(offset)]);
 
@@ -101,6 +99,49 @@ const deleteContact = async (contact_id) => {
   return result;
 };
 
+const getContactsByList = async (list_name, page, limit) => {
+  const offset = (page - 1) * limit;
+
+  // Query to get total number of contacts for the given list_name
+  const [totalRows] = await pool.query(
+    "SELECT COUNT(*) as total FROM contacts WHERE list_name = ?",
+    [list_name]
+  );
+  const totalContacts = totalRows[0]?.total || 0;
+
+  // Query to get contacts with pagination
+  const sql = `
+    SELECT list_name, list_description, email, contact_number
+    FROM contacts
+    WHERE list_name = ?
+    LIMIT ? OFFSET ?
+  `;
+  const [rows] = await pool.query(sql, [
+    list_name,
+    parseInt(limit),
+    parseInt(offset),
+  ]);
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  // Since list_name and list_description are the same for all rows
+  const listDescription = rows[0].list_description;
+
+  const contacts = rows.map((row) => ({
+    email: row.email,
+    contact_number: row.contact_number,
+  }));
+
+  return {
+    list_name,
+    list_description: listDescription,
+    contacts,
+    total_contacts: totalContacts,
+  };
+};
+
 module.exports = {
   getAllContacts,
   getListNamesWithContactCount,
@@ -108,4 +149,5 @@ module.exports = {
   createContacts,
   updateContact,
   deleteContact,
+  getContactsByList,
 };
