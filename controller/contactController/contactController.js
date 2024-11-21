@@ -137,15 +137,22 @@ const deleteContact = async (req, res) => {
 
 const getContactsByList = async (req, res) => {
   try {
-    const { list_name } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+    const { list_name, page } = req.params;
+    const limitParam = parseInt(req.query.limit);
+    const limit = !isNaN(limitParam) && limitParam > 0 ? limitParam : 10; // Default limit is 10
 
     if (!list_name) {
       return res.status(400).json({ error: "list_name is required" });
     }
 
-    const data = await contactModel.getContactsByList(list_name, page, limit);
+    const pageNumber =
+      !isNaN(parseInt(page)) && parseInt(page) > 0 ? parseInt(page) : 1;
+
+    const data = await contactModel.getContactsByList(
+      list_name,
+      pageNumber,
+      limit
+    );
 
     if (!data) {
       return res

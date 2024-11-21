@@ -109,6 +109,13 @@ const getContactsByList = async (list_name, page, limit) => {
   );
   const totalContacts = totalRows[0]?.total || 0;
 
+  // Calculate total pages
+  const totalPages = Math.ceil(totalContacts / limit);
+  const currentPage = page > totalPages && totalPages > 0 ? totalPages : page;
+
+  // Adjust offset if page number exceeds total pages
+  const adjustedOffset = (currentPage - 1) * limit;
+
   // Query to get contacts with pagination
   const sql = `
     SELECT list_name, list_description, email, contact_number
@@ -119,9 +126,10 @@ const getContactsByList = async (list_name, page, limit) => {
   const [rows] = await pool.query(sql, [
     list_name,
     parseInt(limit),
-    parseInt(offset),
+    parseInt(adjustedOffset),
   ]);
 
+  // If no contacts are found
   if (rows.length === 0) {
     return null;
   }
@@ -139,9 +147,10 @@ const getContactsByList = async (list_name, page, limit) => {
     list_description: listDescription,
     contacts,
     total_contacts: totalContacts,
+    current_page: currentPage,
+    total_pages: totalPages,
   };
 };
-
 module.exports = {
   getAllContacts,
   getListNamesWithContactCount,
