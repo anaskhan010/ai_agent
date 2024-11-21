@@ -7,7 +7,7 @@ const getAllContacts = async () => {
 
 const getListNamesWithContactCount = async () => {
   const sql = `
-    SELECT list_name, list_description, COUNT(*) AS contact_count
+    SELECT list_name, list_description,created_at, COUNT(*) AS contact_count
     FROM contacts
     GROUP BY list_name, list_description;
   `;
