@@ -9,7 +9,7 @@ const getListNamesWithContactCount = async () => {
   const sql = `
     SELECT list_name, list_description,created_at, COUNT(*) AS contact_count
     FROM contacts
-    GROUP BY list_name, list_description;
+    GROUP BY list_name, list_description,created_at;
   `;
 
   const [rows] = await pool.query(sql);
