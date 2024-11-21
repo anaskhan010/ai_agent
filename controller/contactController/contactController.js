@@ -2,7 +2,8 @@ const contactModel = require("../../model/contactModel/contactModel");
 
 const getAllContacts = async (req, res) => {
   try {
-    const pageParam = parseInt(req.params.page);
+    // Extract pagination parameters from query string
+    const pageParam = parseInt(req.query.page);
     const limitParam = parseInt(req.query.limit);
 
     const page = !isNaN(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -14,6 +15,8 @@ const getAllContacts = async (req, res) => {
     );
 
     const totalPages = Math.ceil(totalContacts / limit);
+
+    // Ensure the page does not exceed total pages
     const currentPage = page > totalPages && totalPages > 0 ? totalPages : page;
 
     res.status(200).json({
