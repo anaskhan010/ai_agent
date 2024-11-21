@@ -2,8 +2,21 @@ const contactModel = require("../../model/contactModel/contactModel");
 
 const getAllContacts = async (req, res) => {
   try {
-    const contacts = await contactModel.getAllContacts();
-    res.status(200).json(contacts);
+    // Extract pagination parameters from query string
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 contacts per page
+
+    const { contacts, totalContacts } = await contactModel.getAllContacts(
+      page,
+      limit
+    );
+
+    res.status(200).json({
+      contacts,
+      totalContacts,
+      currentPage: page,
+      totalPages: Math.ceil(totalContacts / limit),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

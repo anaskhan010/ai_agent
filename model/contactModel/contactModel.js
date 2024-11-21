@@ -1,8 +1,19 @@
 const pool = require("../../config/DBConnection"); // Adjust the path to your pool.js file
 
-const getAllContacts = async () => {
-  const [rows] = await pool.query("SELECT * FROM contacts");
-  return rows;
+const getAllContacts = async (page, limit) => {
+  const offset = (page - 1) * limit;
+
+  // Query to get the total number of contacts
+  const [totalRows] = await pool.query(
+    "SELECT COUNT(*) as total FROM contacts"
+  );
+  const totalContacts = totalRows[0]?.total || 0;
+
+  // Query to get paginated contacts
+  const sql = "SELECT * FROM contacts LIMIT ? OFFSET ?";
+  const [rows] = await pool.query(sql, [parseInt(limit), parseInt(offset)]);
+
+  return { contacts: rows, totalContacts };
 };
 
 const getListNamesWithContactCount = async () => {
