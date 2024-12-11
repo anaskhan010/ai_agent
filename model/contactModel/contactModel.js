@@ -1,10 +1,40 @@
 const pool = require("../../config/DBConnection"); // Adjust the path to your pool.js file
 
-const getAllContacts = async (page, limit) => {
-  // Query to get the total number of contacts
-  const [totalRows] = await pool.query(
-    "SELECT COUNT(*) as total FROM contacts"
-  );
+// const getAllContacts = async (page, limit) => {
+//   // Query to get the total number of contacts
+//   const [totalRows] = await pool.query(
+//     "SELECT COUNT(*) as total FROM contacts"
+//   );
+//   const totalContacts = totalRows[0]?.total || 0;
+
+//   const totalPages = Math.ceil(totalContacts / limit);
+
+//   // Adjust page if it exceeds total pages
+//   const adjustedPage = page > totalPages && totalPages > 0 ? totalPages : page;
+
+//   const offset = (adjustedPage - 1) * limit;
+
+//   // Query to get paginated contacts
+//   const sql = "SELECT * FROM contacts LIMIT ? OFFSET ?";
+//   const [rows] = await pool.query(sql, [parseInt(limit), parseInt(offset)]);
+
+//   return { contacts: rows, totalContacts };
+// };
+
+const getAllContacts = async (page, limit, search) => {
+  let whereClause = "";
+  let values = [];
+
+  // If search term is provided, construct a WHERE clause using LIKE conditions
+  if (search && search.trim() !== "") {
+    whereClause =
+      "WHERE email LIKE ? OR contact_number LIKE ? OR list_name LIKE ?";
+    values = [`%${search}%`, `%${search}%`, `%${search}%`];
+  }
+
+  // Get total number of contacts (with or without WHERE clause depending on search)
+  const countQuery = `SELECT COUNT(*) as total FROM contacts ${whereClause}`;
+  const [totalRows] = await pool.query(countQuery, values);
   const totalContacts = totalRows[0]?.total || 0;
 
   const totalPages = Math.ceil(totalContacts / limit);
@@ -14,9 +44,11 @@ const getAllContacts = async (page, limit) => {
 
   const offset = (adjustedPage - 1) * limit;
 
-  // Query to get paginated contacts
-  const sql = "SELECT * FROM contacts LIMIT ? OFFSET ?";
-  const [rows] = await pool.query(sql, [parseInt(limit), parseInt(offset)]);
+  // Query to get paginated contacts (with or without WHERE clause)
+  const sql = `SELECT * FROM contacts ${whereClause} LIMIT ? OFFSET ?`;
+  values.push(parseInt(limit), parseInt(offset)); // Add paging parameters
+
+  const [rows] = await pool.query(sql, values);
 
   return { contacts: rows, totalContacts };
 };
