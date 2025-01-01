@@ -22,6 +22,10 @@ router.get(
   assistantController.getAssistantsFromVapi
 );
 
-router.post("/createCall", authMiddleware, assistantController.createCall);
+router.put(
+  "/update-assistant",
+  authMiddleware,
+  assistantController.updateAssistant
+);
 
 module.exports = router;

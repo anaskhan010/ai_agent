@@ -75,7 +75,41 @@ const getAssistants = async (page, limit, search = "") => {
   // Return rows (renamed to data) along with totalAssistant
   return { data: rows, totalAssistant };
 };
+
+async function updateAssistantRecord(assistantId, updatedData) {
+  const { name, firstMessage } = updatedData;
+
+  const assistantDataJson = JSON.stringify(updatedData);
+
+  const updateSQL = `
+    UPDATE assistants
+    SET name = ?, first_message = ?, assistant_data = ?
+    WHERE assistant_id = ?
+  `;
+
+  const params = [
+    name || null,
+    firstMessage || null,
+    assistantDataJson,
+    assistantId,
+  ];
+
+  const [result] = await db.query(updateSQL, params);
+  return result.affectedRows;
+}
+
+async function deleteAssistantRecordById(assistantId) {
+  const sql = `
+    DELETE FROM assistants
+    WHERE assistant_id = ?
+  `;
+  const [result] = await db.query(sql, [assistantId]);
+  return result.affectedRows;
+}
+
 module.exports = {
   createAssistantRecord,
   getAssistants,
+  updateAssistantRecord,
+  deleteAssistantRecordById,
 };

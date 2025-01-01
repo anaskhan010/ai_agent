@@ -1,9 +1,9 @@
 const AssistantModel = require("../../model/AssistantModel/AssistantModel");
+require("dotenv").config();
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 
-const KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
-//const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
+const KEY = process.env.KEY;
 
 async function createAssistant(req, res) {
   console.log("----------------");
@@ -142,53 +142,110 @@ const getAssistantsFromVapi = async (req, res) => {
   }
 };
 
-const createCall = async (req, res) => {
-  const { id } = req.body;
+async function updateAssistant(req, res) {
   try {
-    // 1. Prepare your call payload
-    const callPayload = {
-      assistantId: id,
-      to: "+1(346)5492850",
-      from: "+1(496)4143615",
-    };
+    const { id } = req.params;
 
-    // 2. Initiate the call via Axios
-    const callResponse = await axios.post(
-      "https://api.vapi.ai/calls",
-      callPayload, // body/payload goes here
-      {
-        headers: {
-          Authorization: `Bearer YOUR_VAPI_TOKEN_HERE`,
-          "Content-Type": "application/json",
-        },
-      }
+    const payload = req.body;
+
+    const vapiResponse = await fetch(`https://api.vapi.ai/assistant/${id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!vapiResponse.ok) {
+      const errorBody = await vapiResponse.text();
+      console.error("Vapi error body:", errorBody);
+      return res.status(vapiResponse.status).json({
+        success: false,
+        message: `Vapi responded with status ${vapiResponse.status}`,
+        error: errorBody,
+      });
+    }
+
+    const updatedAssistant = await vapiResponse.json();
+    console.log("Updated assistant from Vapi:", updatedAssistant);
+
+    const affectedRows = await AssistantModel.updateAssistantRecord(
+      updatedAssistant.id,
+      updatedAssistant
     );
 
-    console.log("Call initiated:", callResponse.data);
-
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "Assistant created and call initiated successfully",
-      data: {
-        assistant: newAssistant,
-        call: callResponse.data,
-      },
+      message: "Assistant updated successfully",
+      data: updatedAssistant,
+      dbRowsUpdated: affectedRows,
     });
   } catch (error) {
-    console.error("Error creating assistant and call:", error);
-
-    // 5. Return error response
+    console.error("Error updating assistant:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: "Failed to update assistant",
       error: error.message,
     });
   }
-};
+}
+
+async function deleteAssistant(req, res) {
+  try {
+    const { id } = req.params;
+
+    const vapiResponse = await fetch(`https://api.vapi.ai/assistant/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!vapiResponse.ok) {
+      const errorBody = await vapiResponse.text();
+      console.error("Vapi error body:", errorBody);
+      return res.status(vapiResponse.status).json({
+        success: false,
+        message: `Vapi responded with status ${vapiResponse.status}`,
+        error: errorBody,
+      });
+    }
+
+    let deleteResult;
+    try {
+      deleteResult = await vapiResponse.json();
+    } catch (_ignore) {
+      deleteResult = {};
+    }
+
+    const dbRowsDeleted = await AssistantModel.deleteAssistantRecordById(
+      assistantId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Assistant deleted successfully",
+      data: {
+        vapiDeleteResult: deleteResult,
+        dbRowsDeleted,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting assistant:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete assistant",
+      error: error.message,
+    });
+  }
+}
 
 module.exports = {
   createAssistant,
   getAssistants,
   getAssistantsFromVapi,
-  createCall,
+  updateAssistant,
+  deleteAssistant,
 };
