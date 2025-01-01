@@ -51,7 +51,7 @@ const getAssistants = async (page, limit, search = "") => {
   const offset = (adjustedPage - 1) * limit;
 
   // Now build the SELECT query
-  let selectQuery = `SELECT user_id FROM assistants`;
+  let selectQuery = `SELECT * FROM assistants`;
 
   // If search is specified, add the same WHERE clause used in countQuery
   if (search) {

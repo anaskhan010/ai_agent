@@ -16,6 +16,12 @@ router.get(
   assistantController.getAssistants
 );
 
-router.get("/get-assistants/:id", assistantController.getAssistantsFromVapi);
+router.get(
+  "/get-assistants/:id",
+  authMiddleware,
+  assistantController.getAssistantsFromVapi
+);
+
+router.post("/createCall", authMiddleware, assistantController.createCall);
 
 module.exports = router;
