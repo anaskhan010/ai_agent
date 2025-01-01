@@ -1,17 +1,22 @@
 const AssistantModel = require("../../model/AssistantModel/AssistantModel");
-const fetch = require("node-fetch");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+
+//const KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
 const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 
 async function createAssistant(req, res) {
   console.log("----------------");
   try {
-    const payload = req.body;
+    const { name, firstMessage } = req.body;
+
+    const payload = {
+      name: name,
+      firstMessage: firstMessage,
+    };
 
     // Send POST to Vapi's create-assistant endpoint
-    const vapiResponse = await fetch("https://api.vapi.ai/assistant", {
-      method: "POST",
+    const vapiResponse = await axios.post("https://api.vapi.ai/assistant", {
       headers: {
         Authorization: `Bearer ${KEY}`,
         "Content-Type": "application/json",
@@ -31,13 +36,9 @@ async function createAssistant(req, res) {
 
     const newAssistant = await vapiResponse.json();
 
-    console.log(req.headers, "++++");
-
     const token = req.headers["authorization"].split(" ")[1];
 
     const decodedToken = jwt.verify(token, "ASAJKLDSLKDJLASJDLA");
-
-    console.log(decodedToken, "devoce");
 
     const user_id = decodedToken.user.id;
 
@@ -102,9 +103,11 @@ const getAssistants = async (req, res) => {
   }
 };
 const getAssistantsFromVapi = async (req, res) => {
+  const id = req.params.id;
+
   console.log("-------");
   try {
-    const response = await axios.get("https://api.vapi.ai/assistant", {
+    const response = await axios.get(`https://api.vapi.ai/assistant/${id}`, {
       headers: {
         Authorization: `Bearer ${KEY}`,
       },
@@ -128,8 +131,55 @@ const getAssistantsFromVapi = async (req, res) => {
   }
 };
 
+const createCall = async (req, res) => {
+  try {
+    // 1. Prepare your call payload
+    const callPayload = {
+      assistantId: newAssistant.id, // Make sure 'newAssistant' is defined
+      to: "+1(346)5492850",
+      from: "+1(496)4143615",
+    };
+
+    // 2. Initiate the call via Axios
+    const callResponse = await axios.post(
+      "https://api.vapi.ai/calls",
+      callPayload, // body/payload goes here
+      {
+        headers: {
+          Authorization: `Bearer YOUR_VAPI_TOKEN_HERE`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // 3. Check if Axios returned a successful response (2xx)
+    //    Axios will throw an error if response status is not 2xx, so you can rely on try/catch.
+    console.log("Call initiated:", callResponse.data);
+
+    // 4. Return success to the client
+    return res.status(201).json({
+      success: true,
+      message: "Assistant created and call initiated successfully",
+      data: {
+        assistant: newAssistant, // again, ensure newAssistant is defined
+        call: callResponse.data,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating assistant and call:", error);
+
+    // 5. Return error response
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAssistant,
   getAssistants,
   getAssistantsFromVapi,
+  createCall,
 };

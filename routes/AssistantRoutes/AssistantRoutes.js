@@ -16,6 +16,6 @@ router.get(
   assistantController.getAssistants
 );
 
-router.get("/get-assistants", assistantController.getAssistantsFromVapi);
+router.get("/get-assistants/:id", assistantController.getAssistantsFromVapi);
 
 module.exports = router;
