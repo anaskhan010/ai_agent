@@ -1,7 +1,6 @@
-require("dotenv").config();
 const axios = require("axios");
 
-const KEY = process.env.KEY;
+const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 const createCall = async (req, res) => {
   const { id } = req.body;
   try {

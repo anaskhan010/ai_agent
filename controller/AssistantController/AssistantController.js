@@ -3,7 +3,9 @@ require("dotenv").config();
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 
-const KEY = process.env.KEY;
+// KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
+
+const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 
 async function createAssistant(req, res) {
   console.log("----------------");
