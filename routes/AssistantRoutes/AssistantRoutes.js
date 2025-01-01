@@ -11,9 +11,11 @@ router.post(
 );
 
 router.get(
-  "/get_all_assistance",
+  "/get_all_assistants",
   authMiddleware,
   assistantController.getAssistants
 );
+
+router.get("/get-assistants", assistantController.getAssistantsFromVapi);
 
 module.exports = router;

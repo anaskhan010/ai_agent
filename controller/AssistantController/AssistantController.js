@@ -60,7 +60,23 @@ const getAssistants = async (req, res) => {
   }
 };
 
+const getAssistantsFromVapi = async (req, res) => {
+  try {
+    const data = await fetch("https://api.vapi.ai/assistant", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+    res.status(200).json({ data: data });
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
+
 module.exports = {
   createAssistant,
   getAssistants,
+  getAssistantsFromVapi,
 };
