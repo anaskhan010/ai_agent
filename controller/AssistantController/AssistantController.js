@@ -2,8 +2,8 @@ const AssistantModel = require("../../model/AssistantModel/AssistantModel");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 
-//const KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
-const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
+const KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
+//const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 
 async function createAssistant(req, res) {
   console.log("----------------");
@@ -107,17 +107,28 @@ const getAssistantsFromVapi = async (req, res) => {
 
   console.log("-------");
   try {
-    const response = await axios.get(`https://api.vapi.ai/assistant/${id}`, {
-      headers: {
-        Authorization: `Bearer ${KEY}`,
-      },
-    });
-    const assistants = response.data;
-    return res.status(200).json({
-      success: true,
-      message: "List of assistants retrieved successfully",
-      data: assistants,
-    });
+    const token = req.headers["authorization"].split(" ")[1];
+
+    const decodedToken = jwt.verify(token, "ASAJKLDSLKDJLASJDLA");
+
+    const user_id = decodedToken.user.id;
+    if (user_id) {
+      const response = await axios.get(`https://api.vapi.ai/assistant/${id}`, {
+        headers: {
+          Authorization: `Bearer ${KEY}`,
+        },
+      });
+      const assistants = response.data;
+      return res.status(200).json({
+        success: true,
+        message: "List of assistants retrieved successfully",
+        data: assistants,
+      });
+    } else {
+      res
+        .status(401)
+        .json({ message: "You don't have permission to view this Assistant" });
+    }
   } catch (error) {
     console.error(
       "Error fetching assistants:",
@@ -132,10 +143,11 @@ const getAssistantsFromVapi = async (req, res) => {
 };
 
 const createCall = async (req, res) => {
+  const { id } = req.body;
   try {
     // 1. Prepare your call payload
     const callPayload = {
-      assistantId: newAssistant.id, // Make sure 'newAssistant' is defined
+      assistantId: id,
       to: "+1(346)5492850",
       from: "+1(496)4143615",
     };
@@ -152,16 +164,13 @@ const createCall = async (req, res) => {
       }
     );
 
-    // 3. Check if Axios returned a successful response (2xx)
-    //    Axios will throw an error if response status is not 2xx, so you can rely on try/catch.
     console.log("Call initiated:", callResponse.data);
 
-    // 4. Return success to the client
     return res.status(201).json({
       success: true,
       message: "Assistant created and call initiated successfully",
       data: {
-        assistant: newAssistant, // again, ensure newAssistant is defined
+        assistant: newAssistant,
         call: callResponse.data,
       },
     });
