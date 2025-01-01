@@ -28,4 +28,10 @@ router.put(
   assistantController.updateAssistant
 );
 
+router.delete(
+  "/delete-assistant",
+  authMiddleware,
+  assistantController.deleteAssistant
+);
+
 module.exports = router;
