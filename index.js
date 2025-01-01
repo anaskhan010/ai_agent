@@ -8,6 +8,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/userRoute/userRoute");
 const roleRoutes = require("./routes/roleRoute/roleRoutes");
 const contactRoutes = require("./routes/contactRoute/contactRoute");
+const AssistantRoutes = require("./routes/AssistantRoutes/AssistantRoutes");
 dotenv.config({ path: "./config/config.env" });
 
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use(cors());
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api", contactRoutes);
+app.use("/api/assistant", AssistantRoutes);
 
 app.get("/", (req, res) => {
   res.send("User Management API is running.");

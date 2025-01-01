@@ -39,7 +39,7 @@ const getAllContacts = async (page, limit, search) => {
 
   const totalPages = Math.ceil(totalContacts / limit);
 
-  // Adjust page if it exceeds total pages
+  // Adjust page if it exceeds total pages 
   const adjustedPage = page > totalPages && totalPages > 0 ? totalPages : page;
 
   const offset = (adjustedPage - 1) * limit;
