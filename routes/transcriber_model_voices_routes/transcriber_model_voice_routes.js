@@ -5,7 +5,7 @@ const authMiddleware = require("../../middleware/authMiddleware");
 const router = express.Router();
 
 router.get(
-  "/transciber_voice_model",
+  "/transcriber_voice_model",
   authMiddleware,
   transcriber_model_voice_controller.get_transcriber_model_voice
 );
