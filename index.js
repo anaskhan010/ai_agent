@@ -10,6 +10,7 @@ const roleRoutes = require("./routes/roleRoute/roleRoutes");
 const contactRoutes = require("./routes/contactRoute/contactRoute");
 const AssistantRoutes = require("./routes/AssistantRoutes/AssistantRoutes");
 const outboundCallRoutes = require("./routes/outboundRoutes/outboundCallRoutes");
+const transciber_voice_model_routes = require("./routes/transcriber_model_voices_routes/transcriber_model_voice_routes");
 dotenv.config({ path: "./config/config.env" });
 
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use("/api/roles", roleRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/assistant", AssistantRoutes);
 app.use("/api/outboundcall", outboundCallRoutes);
+app.use("/api/trans_voice_model", transciber_voice_model_routes);
 
 app.get("/", (req, res) => {
   res.send("User Management API is running.");
