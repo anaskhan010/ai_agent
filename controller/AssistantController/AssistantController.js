@@ -10,33 +10,33 @@ const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 async function createAssistant(req, res) {
   console.log("----------------");
   try {
-    const { name, firstMessage } = req.body;
-
+    const { name, firstMessage, transcriber, model, voice } = req.body;
     const payload = {
-      name: name,
-      firstMessage: firstMessage,
+      name,
+      firstMessage,
+      transcriber,
+      model,
+      voice,
     };
 
-    // Send POST to Vapi's create-assistant endpoint
-    const vapiResponse = await axios.post("https://api.vapi.ai/assistant", {
-      headers: {
-        Authorization: `Bearer ${KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const vapiResponse = await axios.post(
+      "https://api.vapi.ai/assistant",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const newAssistant = vapiResponse.data;
+    console.log("Vapi returned new assistant:", newAssistant);
 
-    if (!vapiResponse.ok) {
-      // Attempt to parse response body
-      const errorBody = await vapiResponse.text();
-      console.error("Vapi error body:", errorBody);
-
+    if (vapiResponse.status !== 201 && vapiResponse.status !== 200) {
       throw new Error(
-        `Vapi responded with status: ${vapiResponse.status}, body: ${errorBody}`
+        `Vapi responded with unexpected status: ${vapiResponse.status}`
       );
     }
-
-    const newAssistant = await vapiResponse.json();
 
     const token = req.headers["authorization"].split(" ")[1];
 
