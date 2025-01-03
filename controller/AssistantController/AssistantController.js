@@ -3,9 +3,9 @@ require("dotenv").config();
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 
-// KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
+const KEY = "aa6161d2-7ba0-4182-96aa-fee4a9f14fd8";
 
-const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
+//const KEY = "bc725647-fc1b-45a5-93a5-57b784e65cc6";
 
 async function createAssistant(req, res) {
   console.log("----------------");
@@ -44,14 +44,13 @@ async function createAssistant(req, res) {
 
     const user_id = decodedToken.user.id;
 
-    // Store entire newAssistant in the DB
     await AssistantModel.createAssistantRecord(
       user_id,
-      newAssistant.id, // assistant_id
-      newAssistant.orgId, // org_id
-      newAssistant.name || null, // name
-      newAssistant.firstMessage || null, // first_message
-      newAssistant // entire object goes to assistant_data
+      newAssistant.id,
+      newAssistant.orgId,
+      newAssistant.name || null,
+      newAssistant.firstMessage || null,
+      newAssistant
     );
 
     res.status(201).json({
